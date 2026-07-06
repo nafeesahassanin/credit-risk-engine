@@ -22,14 +22,14 @@ import os
 # configuration
 TICKERS = ["BA", "F", "GE", "MMM", "CAT"] 
 # path to SQLite database
-db_path = os.path.join(os.path.dirname(__file__), "database", "credit_risk.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "database", "credit_risk.db")
 
 def get_connection():
     """
     Creates and returns a connection to the SQLite database.
     """
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    return sqlite3.connect(db_path)
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    return sqlite3.connect(DB_PATH)
 
 def create_tables():
     """
