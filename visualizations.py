@@ -223,17 +223,17 @@ def plot_stress_comparison():
     fig, ax = plt.subplots(figsize = (14,7))
 
     baseline = df.groupby("ticker")["baseline_z"].first()
-    ax.bar(x, [baseline[t] for t in TICKERS],
-               width = 0.8, color = "lightgray", alpha=0.5, 
+    ax.bar(x-0.3, [baseline[t] for t in TICKERS],
+               width = 0.2, color = "gray", alpha=0.5, 
                label = "Baseline Z-Score", zorder=2)
-    
+    scenario_offsets = [-0.1, 0.1, 0.3]
     scenario_colors = ["steelblue", "darkorange", "crimson"]
     for i, (scenario, color) in enumerate(zip(scenarios, scenario_colors)):
         scenario_data = df[df["scenario"] == scenario]
         values = [scenario_data[scenario_data["ticker"]==t]
                  ["median_z"].values[0] for t in TICKERS]
-        ax.bar(x + offsets[i+1] * width * 0.6, values,
-               width=width, color=color, alpha=0.8,
+        ax.bar(x + scenario_offsets[i], values,
+               width=0.2, color=color, alpha=0.8,
                label=f"{scenario}", zorder=3)
         
     ax.axhline(y=2.99, color="green", linewidth=1.5,
@@ -258,22 +258,18 @@ def plot_stress_comparison():
 # Chart 5: Monte Carlo Distribution
 def plot_monte_carlo_distribution():
     """
-    Histogram showing the full distribution of 10,000 simulated
-    Z-Scores for Boeing under the Sector Crisis scenario.
+    Shows the Monte Carlo Z-Score distributions for all five
+    companies under the Recession scenario side by side.
     """
-
-    # import modules
     from stress_simulator import simulated_stressed_zscore
     from stress_simulator import SCENARIOS
-    import sqlite3
 
     conn = get_connection()
-    ba_data = pd.read_sql_query("""
-        SELECT 
+    company_data = pd.read_sql_query("""
+        SELECT
             i.ticker, i.year, i.revenue, i.ebit, i.net_income,
             b.total_assets, b.total_liabilities, b.working_capital,
-            b.retained_earnings, b.shareholders_equity,
-            b.current_assets, b.current_liabilities,
+            b.retained_earnings, b.shareholders_equity, b.current_assets, b.current_liabilities,
             m.market_cap, z.z_score
         FROM income_statement i
         JOIN balance_sheet b
@@ -282,54 +278,72 @@ def plot_monte_carlo_distribution():
             ON i.ticker = m.ticker AND i.year = m.year
         JOIN z_scores z
             ON i.ticker = z.ticker AND i.year = z.year
-        WHERE i.ticker = 'BA'
+        WHERE b.total_assets > 0
         GROUP BY i.ticker
-        HAVING MAX(i.year)
+        HAVING MAX (i.year)
+        ORDER BY i.ticker
     """, conn)
     conn.close()
 
-    ba_row = ba_data.iloc[0]
-    scenario = SCENARIOS["Sector Crisis"]
-
+    scenario = SCENARIOS["Recession"]
     np.random.seed(42)
-    simulated_z_scores = simulated_stressed_zscore(
-        ba_row, scenario, 10000)
-    fig, ax = plt.subplots(figsize=(12,6))
-    ax.hist(simulated_z_scores, bins=60,
-            color="steelblue", alpha=0.7,
-            edgecolor="white", linewidth=0.5,
-            density=True, label="Simulated Z-Scores")
     
-    median_z = np.percentile(simulated_z_scores, 50)
-    p5_z = np.percentile(simulated_z_scores, 5)
-    p1_z = np.percentile(simulated_z_scores, 1)
-
-    ax.axvline(x=ba_row["z_score"], color="black",
-               linewidth=2, linestyle="-",
-               label=f"Basline Z-Score: {ba_row['z_score']:.3f}")
-    ax.axvline(x=median_z, color="green",
-               linewidth=2, linestyle="--",
-               label=f"Median Stressed: {median_z:.3f}")
-    ax.axvline(x=p5_z, color="orange",
-               linewidth=2, linestyle=":",
-               label=f"P5 (5th Percentile): {p5_z:.3f}")
-    ax.axvline(x=p1_z, color="red",
-               linewidth=2, linestyle="-.",
-               label=f"P1 (1st Percentile): {p1_z:.3f}")
+    fig, axes = plt.subplots(1, 5, figsize=(20,6))
+    fig.suptitle(
+        "Monte Carlo Z-Score Distributions - Recession Scenario "
+        "(10,000 Simulations)",
+        fontsize=13, fontweight="bold")
     
-    ax.axvspan(ax.get_xlim()[0], 1.81,
-               alpha=0.1, color="red",
-               label="Distress Zone (Z < 1.81)")
-    ax.set_title("Boeing - Monte Carlo Z-Score Distribution\n"
-                 "Sector Crsis Scenario (10,000 Simulations)",
-                 fontsize=13, fontweight="bold")
-    ax.set_xlabel("Simulated Altman Z-Score", fontsize=10)
-    ax.set_ylabel("Density", fontsize=10)
-    ax.legend(fontsize=9)
-    ax.tick_params(axis="both", labelsize=9)
+    for ax, ticker in zip(axes, TICKERS):
+        row = company_data[company_data["ticker"] == ticker].iloc[0]
+        simulated = simulated_stressed_zscore(row, scenario, 10000)
 
-    plt.tight_layout()
-    save_chart("5_monte_carlo_boeing.png")
+        ax.hist(simulated, bins=50,
+                color = COLORS[ticker], alpha=0.7,
+                edgecolor="white", linewidth=0.3, density=True)
+        
+        x_min = simulated.min() - 0.05
+        x_max = simulated.max() + 0.05
+        ax.set_xlim(x_min, x_max)
+
+        if x_min < 1.81:
+            ax.axvspan(x_min, min(1.81, x_max),
+                       alpha=0.15, color="red", zorder=0)
+        if x_min < 2.99 and x_max > 1.81:
+            ax.axvspan(max(x_min, 1.81), min(2.99, x_max),
+                       alpha=0.15, color="yellow", zorder=0)
+        if x_min > 2.99:
+            ax.axvspan(max(x_min, 2.99), x_max,
+                       alpha=0.15, color="green", zorder=0)  
+
+        baseline = row["z_score"]
+        median_z = np.percentile(simulated, 50)
+
+        ax.axvline(x=baseline, color="black",
+                   linewidth=1.5, linestyle="-",
+                   label=f"Baseline: {baseline:.2f}") 
+        ax.axvline(x=median_z, color="white",
+                   linewidth=1.5, linestyle="--",
+                   label=f"Median: {median_z:.2f}")
+        
+        ax.set_title(COMPANY_NAMES[ticker],
+                     fontsize=11, fontweight="bold",
+                     color=COLORS[ticker])
+        ax.set_xlabel("Z-Score", fontsize=8)
+        ax.set_ylabel("Density", fontsize=8)
+        ax.tick_params(axis="both", labelsize=7)
+        ax.legend(fontsize=6.5)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    save_chart("5_monte_carlo_distributions.png")
+         
+
+   
+        
+
+
+    
+
 
 if __name__ == "__main__":
     print("=" * 75)
