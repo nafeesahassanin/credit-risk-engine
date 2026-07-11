@@ -178,7 +178,7 @@ def store_composite_scores(df):
                    profitability_score REAL,
                    liquidity_score REAL,
                    efficiency_score REAL,
-                   composite_scire REAL,
+                   composite_score REAL,
                    distress_probability REAL,
                    PRIMARY KEY (ticker, year)
                    )
@@ -252,6 +252,7 @@ def print_summary(df):
               f"{dist_str:<12}"
               f"{assessment:<15}")
     print()
+
 
 if __name__ == "__main__":
     print("=" * 75)
