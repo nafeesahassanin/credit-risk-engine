@@ -249,7 +249,7 @@ def print_summary(df):
 
         print(f"{scenario}"
               f"{SCENARIOS[scenario]['description']}:")
-        print(f"{'Company':<10}{'Basline Z':<14}"
+        print(f"{'Company':<10}{'Baseline Z':<14}"
               f"{'Stressed Z':<14}{'Change':<12}{'Zone':<10}")
         print(" " + "-" *55)
 
@@ -264,7 +264,7 @@ def print_summary(df):
 
     avg_change = df.groupby("ticker")["z_change"].mean()
     most_vulnerable = avg_change.idxmin()
-    print(f"Most vulrneable across all scenarios: "
+    print(f"Most vulnerable across all scenarios: "
           f"{most_vulnerable} "
           f"(average Z-score change: {avg_change[most_vulnerable]:+.3f})")
     print()
