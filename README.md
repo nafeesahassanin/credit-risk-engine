@@ -39,13 +39,32 @@ main.py runs the complete pipeline end to end with one command: python main.py
 
 ## How to Run
 
-Install dependencies:
+1. Clone the repository
+2. Install dependencies:
 pip install yfinance pandas numpy matplotlib scipy scikit-learn
-
-Run the complete pipeline:
+3. Run the full pipeline:
 python main.py
-Total runtime: approximately 30 seconds. All charts save
-automatically to the charts/ folder.
+4. Charts save automatically to the charts/ folder
+5. Database saves to database/credit_risk.db
+   
+---
+
+## Visualizations
+
+### Altman Z-Score Timeline (2021-2025)
+![Z-Score Timeline](charts/1_zscore_timeline.png)
+
+### Distress Probability Heatmap
+![Distress Heatmap](charts/2_distress_heatmap.png)
+
+### Composite Score Radar Chart
+![Radar Chart](charts/3_radar_chart.png)
+
+### Baseline vs Stressed Z-Scores
+![Stress Comparison](charts/4_stress_comparison.png)
+
+### Monte Carlo Distributions — Recession Scenario
+![Monte Carlo Distributions](charts/5_monte_carlo_distributions.png)
 
 ---
 
