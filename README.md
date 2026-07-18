@@ -41,7 +41,7 @@ main.py runs the complete pipeline end to end with one command: python main.py
 
 1. Clone the repository
 2. Install dependencies:
-pip install yfinance pandas numpy matplotlib scipy scikit-learn
+pip install yfinance pandas numpy matplotlib scipy
 3. Run the full pipeline:
 python main.py
 4. Charts save automatically to the charts/ folder
@@ -258,6 +258,5 @@ Key SQL techniques used throughout:
 - NumPy — Monte Carlo simulation and array operations
 - matplotlib — all five visualizations
 - scipy — logistic transformation and statistical functions
-- scikit-learn — imported for logistic regression extension
 - SQLite — normalized database storage and retrieval
 - Git and GitHub — version control and project hosting
