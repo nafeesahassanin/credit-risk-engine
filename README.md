@@ -41,7 +41,7 @@ main.py runs the complete pipeline end to end with one command: python main.py
 
 1. Clone the repository
 2. Install dependencies:
-pip install yfinance pandas numpy matplotlib scipy
+pip install yfinance pandas numpy matplotlib 
 3. Run the full pipeline:
 python main.py
 4. Charts save automatically to the charts/ folder
