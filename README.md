@@ -257,6 +257,5 @@ Key SQL techniques used throughout:
 - pandas — data manipulation and SQL results handling
 - NumPy — Monte Carlo simulation and array operations
 - matplotlib — all five visualizations
-- scipy — logistic transformation and statistical functions
 - SQLite — normalized database storage and retrieval
 - Git and GitHub — version control and project hosting
